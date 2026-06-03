@@ -10,6 +10,8 @@ import {
 import { exec } from 'child_process';
 import util from 'util';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -17,7 +19,7 @@ const execPromise = util.promisify(exec);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Vibrant, High-Contrast Aesthetic Themes
+// Color Themes
 const THEME = {
     VIBRANT_PINK: 0xFF69B4,
     NEON_PURPLE: 0x9400D3,
@@ -26,21 +28,29 @@ const THEME = {
     CRIMSON_RED: 0xDC143C
 };
 
-// Local storage config database for tracking authorized role
-const DB_FILE = './configDb.json';
+// Safe Path Resolution for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DB_FILE = path.join(__dirname, 'configDb.json');
+
 if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({ authorizedRoleId: null }));
+    fs.writeFileSync(DB_FILE, JSON.stringify({ authorizedRoleId: null }, null, 2));
 }
 
 function getAuthRole() {
-    return JSON.parse(fs.readFileSync(DB_FILE)).authorizedRoleId;
+    try {
+        const data = fs.readFileSync(DB_FILE, 'utf8');
+        return JSON.parse(data).authorizedRoleId;
+    } catch (e) {
+        return null;
+    }
 }
 
 function setAuthRole(roleId) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({ authorizedRoleId: roleId }));
+    fs.writeFileSync(DB_FILE, JSON.stringify({ authorizedRoleId: roleId }, null, 2));
 }
 
-// Register Discord Slash Commands
+// Slash Commands Layout
 const commands = [
     new SlashCommandBuilder()
         .setName('deploy')
@@ -83,11 +93,12 @@ const commands = [
         .setDescription('💎 Inspect core bot infrastructure and platform information')
 ];
 
-// Deploy slash commands on boot
+// Register Discord Commands on Ready
 client.once('ready', async () => {
     console.log(`✨ Connected successfully as ${client.user.tag}!`);
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     try {
+        console.log('🔄 Registering slash commands to guild...');
         await rest.put(
             Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
             { body: commands }
@@ -98,16 +109,16 @@ client.once('ready', async () => {
     }
 });
 
-// Interaction Handling Router
+// Command Logic Router
 client.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, options, member } = interaction;
     const adminRole = getAuthRole();
 
-    // Permissions Guard
+    // Protection Guard Setup
     if (['deploy', 'assign-vps-role', 'remove-vps'].includes(commandName)) {
-        const hasRole = member.roles.cache.has(adminRole);
+        const hasRole = adminRole ? member.roles.cache.has(adminRole) : false;
         const isServerAdmin = member.permissions.has(PermissionFlagsBits.Administrator);
         
         if (!hasRole && !isServerAdmin) {
@@ -143,27 +154,23 @@ client.on('interactionCreate', async interaction => {
         const containerId = `vps-${Math.random().toString(36).substring(2, 7)}`;
 
         try {
-            // 1. Run a new detached Docker Container from our custom image
+            // Spin up Docker box container
             await execPromise(`docker run -d --name ${containerId} --privileged bolthosting-vps:latest`);
-            
-            // 2. Inject and update the root password dynamically inside the container
             await execPromise(`docker exec ${containerId} bash -c "echo 'root:${rootPass}' | chpasswd"`);
 
-            // 3. Fire up sshx in the background inside the container to grab a web shell link
+            // Start sshx process detached
             const sshxCmd = `docker exec ${containerId} bash -c "timeout 300 sshx -q > /root/sshx.log 2>&1 &"`;
-            exec(sshxCmd); // Run non-blocking
+            exec(sshxCmd);
 
-            // Let sshx complete its connection handshake handshake
             await new Promise(resolve => setTimeout(resolve, 4000));
 
-            // 4. Extract the generated URL link out of the log file
             const { stdout: logData } = await execPromise(`docker exec ${containerId} cat /root/sshx.log`);
-            const webShellUrl = logData.match(/https:\/\/sshx\.io\/c\/[a-zA-Z0-9_-]+/)?.[0] || "🔗 Session initialized background loop.";
+            const webShellUrl = logData.match(/https:\/\/sshx\.io\/c\/[a-zA-Z0-9_-]+/)?.[0] || "🔗 Session URL generation pending reload.";
 
             const embedFeedback = new EmbedBuilder()
                 .setColor(THEME.VIBRANT_PINK)
                 .setTitle('💖 Premium VPS Container Fabricated Successfully')
-                .setDescription('✨ Your isolated Docker-based virtual runtime env environment is ready!')
+                .setDescription('✨ Your isolated Docker-based virtual runtime environment is ready!')
                 .addFields(
                     { name: '🆔 Container Reference ID', value: `\`${containerId}\``, inline: true },
                     { name: '💿 Operating System Matrix', value: `\`Ubuntu 22.04 LTS\``, inline: true },
@@ -179,7 +186,7 @@ client.on('interactionCreate', async interaction => {
                 await interaction.user.send({ embeds: [embedFeedback] });
                 await interaction.editReply({ content: '✨ 💖 Check your direct messages! Your secure private runtime environment coordinates have arrived.' });
             } catch {
-                await interaction.editReply({ content: '⚠️ DM delivery failed. Check your privacy options, here are the details:', embeds: [embedFeedback] });
+                await interaction.editReply({ content: '⚠️ DM delivery failed. Verify privacy options context, here are the details:', embeds: [embedFeedback] });
             }
 
         } catch (err) {
@@ -271,4 +278,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
-      
+          
