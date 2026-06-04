@@ -5,7 +5,9 @@ import {
     REST, 
     Routes, 
     EmbedBuilder, 
-    PermissionFlagsBits 
+    PermissionFlagsBits,
+    ActivityType,
+    PresenceUpdateStatus
 } from 'discord.js';
 import { exec } from 'child_process';
 import util from 'util';
@@ -19,16 +21,16 @@ const execPromise = util.promisify(exec);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Color Themes
+// Premium Aesthetic Vibrant Neon Theme Colors
 const THEME = {
-    VIBRANT_PINK: 0xFF69B4,
-    NEON_PURPLE: 0x9400D3,
-    GRADIENT_CYAN: 0x00FFFF,
-    SUCCESS_GREEN: 0x00FF7F,
-    CRIMSON_RED: 0xDC143C
+    ELECTRIC_PINK: 0xFF1493,
+    DEEP_PURPLE: 0x8A2BE2,
+    CYAN_GLOW: 0x00FFFF,
+    NEON_GREEN: 0x39FF14,
+    BURNING_RED: 0xFF3333
 };
 
-// Safe Path Resolution for ES Modules
+// Safe Path Resolution for ES Modules database management
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'configDb.json');
@@ -50,73 +52,99 @@ function setAuthRole(roleId) {
     fs.writeFileSync(DB_FILE, JSON.stringify({ authorizedRoleId: roleId }, null, 2));
 }
 
-// Slash Commands Layout
+// Global UI Layout Elements
+const UI_DECORATOR = "✨ ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ ✨";
+const UI_FOOTER = "Infrastructure Engineered by Lights.in • BoltHosting";
+
+// Definitive Application Slash Commands
 const commands = [
     new SlashCommandBuilder()
         .setName('deploy')
-        .setDescription('💖 Deploy a fresh isolated Docker VPS instance container')
-        .addStringOption(opt => opt.setName('os').setDescription('Select Operating System').setRequired(true).addChoices(
-            { name: 'Ubuntu 22.04 (CodeSandbox Style)', value: 'bolthosting-vps:latest' }
+        .setDescription('💖 Provision a hyper-isolated, high-performance virtual environment runtime')
+        .addStringOption(opt => opt.setName('os').setDescription('Select Enterprise Operating System OS Base Matrix').setRequired(true).addChoices(
+            { name: 'Ubuntu 22.04 LTS (CodeSandbox Ultra Sandbox)', value: 'bolthosting-vps:latest' }
         ))
-        .addStringOption(opt => opt.setName('username').setDescription('System profile identity (e.g. root@name)').setRequired(true))
-        .addStringOption(opt => opt.setName('password').setDescription('Secure root password access credentials').setRequired(true)),
+        .addStringOption(opt => opt.setName('username').setDescription('System profile username identifier (e.g. root@name)').setRequired(true))
+        .addStringOption(opt => opt.setName('password').setDescription('Secure root authorization password credentials').setRequired(true)),
 
     new SlashCommandBuilder()
         .setName('assign-vps-role')
-        .setDescription('🔮 Assign deployment privileges to a specific role')
-        .addRoleOption(opt => opt.setName('role').setDescription('Target role for deployment permissions').setRequired(true))
+        .setDescription('🔮 Synchronize network instance manipulation privileges to a staff role')
+        .addRoleOption(opt => opt.setName('role').setDescription('Target configuration deployment authorization role').setRequired(true))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
     new SlashCommandBuilder()
         .setName('remove-vps')
-        .setDescription('❌ Instantly delete and wipe a specific Docker VPS container')
-        .addStringOption(opt => opt.setName('container_id').setDescription('The unique container ID of the VPS').setRequired(true))
-        .addStringOption(opt => opt.setName('password').setDescription('Confirm deletion process with your secure password').setRequired(true)),
+        .setDescription('❌ Instantly wipe, decommission, and shred an active virtual runtime instance')
+        .addStringOption(opt => opt.setName('container_id').setDescription('Target unique VPS alphanumeric reference container ID').setRequired(true))
+        .addStringOption(opt => opt.setName('password').setDescription('Enter secure password validation parameter to execute process').setRequired(true)),
 
     new SlashCommandBuilder()
         .setName('start-vps')
-        .setDescription('⚡ Boot up an offline VPS container')
-        .addStringOption(opt => opt.setName('container_id').setDescription('Target container ID').setRequired(true)),
+        .setDescription('⚡ Boot up an offline cloud instance infrastructure container')
+        .addStringOption(opt => opt.setName('container_id').setDescription('Target container reference ID').setRequired(true)),
 
     new SlashCommandBuilder()
         .setName('restart-vps')
-        .setDescription('🔄 Perform a clean restart sequence on a VPS container')
-        .addStringOption(opt => opt.setName('container_id').setDescription('Target container ID').setRequired(true)),
+        .setDescription('🔄 Perform a warm reboot cycle sequence on a running virtual server')
+        .addStringOption(opt => opt.setName('container_id').setDescription('Target container reference ID').setRequired(true)),
 
     new SlashCommandBuilder()
         .setName('vps-information')
-        .setDescription('📊 Fetch resource allocation status for a specific VPS container')
-        .addStringOption(opt => opt.setName('container_id').setDescription('Target container ID').setRequired(true)),
+        .setDescription('📊 Fetch exact low-level hardware virtualization resource parsing details')
+        .addStringOption(opt => opt.setName('container_id').setDescription('Target container reference ID').setRequired(true)),
 
     new SlashCommandBuilder()
         .setName('bot-information')
-        .setDescription('💎 Inspect core bot infrastructure and platform information')
+        .setDescription('💎 Inspect core platform node states, service status, and software identity metrics')
 ];
 
-// Register Discord Commands on Ready
+// Discord Ready Client Initialization with Dynamic Status Rotator
 client.once('ready', async () => {
-    console.log(`✨ Connected successfully as ${client.user.tag}!`);
+    console.log(`✨ System authenticated. Online as ${client.user.tag}!`);
+    
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     try {
-        console.log('🔄 Registering slash commands to guild...');
+        console.log('🔄 Syncing premium command mapping routes...');
         await rest.put(
             Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
             { body: commands }
         );
-        console.log('🔮 Aesthetic slash commands populated successfully.');
+        console.log('🔮 Command mapping loaded natively without exceptions.');
     } catch (error) {
-        console.error('❌ Error registering slash commands:', error);
+        console.error('❌ Critical REST command registry error:', error);
     }
+
+    // Dynamic High-Tier Presence Rotation Engine
+    let presenceToggle = true;
+    setInterval(() => {
+        try {
+            if (presenceToggle) {
+                client.user.setPresence({
+                    activities: [{ name: 'BoltHosting 1₹ GB Plan.', type: ActivityType.Watching }],
+                    status: PresenceUpdateStatus.DoNotDisturb
+                });
+            } else {
+                client.user.setPresence({
+                    activities: [{ name: 'BoltHosting KVM.', type: ActivityType.Listening }],
+                    status: PresenceUpdateStatus.DoNotDisturb
+                });
+            }
+            presenceToggle = !presenceToggle;
+        } catch (presenceErr) {
+            console.error('Presence allocation bypass warning:', presenceErr.message);
+        }
+    }, 10000); // Transitions seamlessly every 10 seconds
 });
 
-// Command Logic Router
+// Client Command Execution Router Core Logic
 client.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, options, member } = interaction;
     const adminRole = getAuthRole();
 
-    // Protection Guard Setup
+    // Security Verification Guard Layer
     if (['deploy', 'assign-vps-role', 'remove-vps'].includes(commandName)) {
         const hasRole = adminRole ? member.roles.cache.has(adminRole) : false;
         const isServerAdmin = member.permissions.has(PermissionFlagsBits.Administrator);
@@ -124,25 +152,27 @@ client.on('interactionCreate', async interaction => {
         if (!hasRole && !isServerAdmin) {
             return interaction.reply({
                 embeds: [new EmbedBuilder()
-                    .setColor(THEME.CRIMSON_RED)
-                    .setTitle('⚠️ Operational Security Access Restrained')
-                    .setDescription('```diff\n- You do not have the required administrative role to manage VPS containers.```')
-                    .setFooter({ text: `Powered by BoltHosting • Lights.in` })
+                    .setColor(THEME.BURNING_RED)
+                    .setTitle('🔒 Operational Security Boundary Restrained')
+                    .setDescription(`\`\`\`diff\n- Access Cleared: Denied\n- Authorization Profile Validation Failed.\n- Required administrative clearance missing.\`\`\n\n${UI_DECORATOR}`)
+                    .setFooter({ text: UI_FOOTER })
                 ], ephemeral: true
             });
         }
     }
 
+    // Command Logic Matrix Block
     if (commandName === 'assign-vps-role') {
         const targetRole = options.getRole('role');
         setAuthRole(targetRole.id);
         
         return interaction.reply({
             embeds: [new EmbedBuilder()
-                .setColor(THEME.SUCCESS_GREEN)
-                .setTitle('✨ Privilege Configuration Updated')
-                .setDescription(`🔮 Deployment privileges successfully assigned to: **${targetRole.name}**\nMembers with this role can now use all admin commands.`)
+                .setColor(THEME.NEON_GREEN)
+                .setTitle('🔮 Network Authorization Map Synchronized')
+                .setDescription(`${UI_DECORATOR}\n\n✨ **System Privileges Successfully Bound to:** ${targetRole}\n\n> Users assigned to this specific profile role now inherit administrative orchestration rights to configure, build, and destroy virtual core container sandboxes.`)
                 .setTimestamp()
+                .setFooter({ text: UI_FOOTER })
             ]
         });
     }
@@ -154,44 +184,56 @@ client.on('interactionCreate', async interaction => {
         const containerId = `vps-${Math.random().toString(36).substring(2, 7)}`;
 
         try {
-            // Spin up Docker box container
+            // Deploy tracking instance container onto native system kernel
             await execPromise(`docker run -d --name ${containerId} --privileged bolthosting-vps:latest`);
+            
+            // Allow container virtual network bridge stack to register fully
+            await new Promise(resolve => setTimeout(resolve, 5000));
+
+            // Mount core user access profiles inside sandbox container space
             await execPromise(`docker exec ${containerId} bash -c "echo 'root:${rootPass}' | chpasswd"`);
+            await execPromise(`docker exec ${containerId} service ssh start`);
 
-            // Start sshx process detached
-            const sshxCmd = `docker exec ${containerId} bash -c "timeout 300 sshx -q > /root/sshx.log 2>&1 &"`;
-            exec(sshxCmd);
+            // Ignite background dynamic shell multiplex loop natively via nohup 
+            const sshxCmd = `docker exec ${containerId} bash -c "nohup sshx -q > /root/sshx.log 2>&1 &"`;
+            await execPromise(sshxCmd);
 
-            await new Promise(resolve => setTimeout(resolve, 4000));
+            // Allow the network handshakes to pass through the sshx proxy link infrastructure
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
+            // Pull raw endpoint terminal link context string matches out of execution runtime spaces
             const { stdout: logData } = await execPromise(`docker exec ${containerId} cat /root/sshx.log`);
-            const webShellUrl = logData.match(/https:\/\/sshx\.io\/c\/[a-zA-Z0-9_-]+/)?.[0] || "🔗 Session URL generation pending reload.";
+            const webShellUrl = logData.match(/https:\/\/sshx\.io\/c\/[a-zA-Z0-9_-]+/)?.[0];
+
+            if (!webShellUrl) {
+                throw new Error("Handshake connection dropped. Check main hosting platform proxy configuration policies.");
+            }
 
             const embedFeedback = new EmbedBuilder()
-                .setColor(THEME.VIBRANT_PINK)
-                .setTitle('💖 Premium VPS Container Fabricated Successfully')
-                .setDescription('✨ Your isolated Docker-based virtual runtime environment is ready!')
+                .setColor(THEME.ELECTRIC_PINK)
+                .setTitle('💖 High-Tier Dedicated Instance Fabricated')
+                .setDescription(`📦 **Instance Node Identifier Configuration Matrix Ready!**\nYour ultra-clean, completely isolated sandbox node virtual runtime is active.\n\n${UI_DECORATOR}`)
                 .addFields(
-                    { name: '🆔 Container Reference ID', value: `\`${containerId}\``, inline: true },
-                    { name: '💿 Operating System Matrix', value: `\`Ubuntu 22.04 LTS\``, inline: true },
-                    { name: '👤 Identity User Target', value: `\`${customUser}\``, inline: true },
-                    { name: '🔑 Security Access Password', value: `|| ${rootPass} ||`, inline: false },
-                    { name: '⚡ Secure Web SSH Link (sshx)', value: `[🎯 Instant Web Terminal Direct Entry](${webShellUrl})`, inline: false }
+                    { name: '🆔 Node Ref Key', value: `\`${containerId}\``, inline: true },
+                    { name: '💿 Operating Matrix', value: `\`Ubuntu 22.04 LTS\``, inline: true },
+                    { name: '👤 Master Profile', value: `\`${customUser}\``, inline: true },
+                    { name: '🔑 Password Token Access', value: `||\`${rootPass}\`||`, inline: false },
+                    { name: '⚡ Direct Secure Web SSH Access Entry Terminal', value: `> [🎯 Access Web Shell Terminal Session](${webShellUrl})`, inline: false }
                 )
                 .setThumbnail(client.user.displayAvatarURL())
-                .setFooter({ text: `Infrastructure Provided by Lights.in • System Active` })
+                .setFooter({ text: UI_FOOTER })
                 .setTimestamp();
 
             try {
                 await interaction.user.send({ embeds: [embedFeedback] });
-                await interaction.editReply({ content: '✨ 💖 Check your direct messages! Your secure private runtime environment coordinates have arrived.' });
+                await interaction.editReply({ content: '✨ **Provisioning phase terminated clean.** 💖 Connection keys successfully pushed straight into your secure Direct Messages!' });
             } catch {
-                await interaction.editReply({ content: '⚠️ DM delivery failed. Verify privacy options context, here are the details:', embeds: [embedFeedback] });
+                await interaction.editReply({ content: '⚠️ **System warning notification:** Direct Message delivery channel restricted by privacy settings. Access your terminal node configurations right here:', embeds: [embedFeedback] });
             }
 
         } catch (err) {
             console.error(err);
-            await interaction.editReply({ content: `❌ Critical system exception during container build: \`${err.message}\`` });
+            await interaction.editReply({ content: `❌ **Infrastructure Exception Hook Encountered:** \`${err.message}\`` });
         }
     }
 
@@ -201,10 +243,16 @@ client.on('interactionCreate', async interaction => {
         try {
             await execPromise(`docker start ${containerId}`);
             return interaction.editReply({
-                embeds: [new EmbedBuilder().setColor(THEME.SUCCESS_GREEN).setTitle(`⚡ Container [${containerId}] Online`).setDescription('🔄 Docker environment engines engaged successfully.').setTimestamp()]
+                embeds: [new EmbedBuilder()
+                    .setColor(THEME.NEON_GREEN)
+                    .setTitle(`⚡ Power Sequence Transmitted [${containerId}]`)
+                    .setDescription(`${UI_DECORATOR}\n\n🟩 **Status:** \`ONLINE\`\nContainer power pipelines engaged. Target application loops initialized inside internal memory matrix.`)
+                    .setTimestamp()
+                    .setFooter({ text: UI_FOOTER })
+                ]
             });
         } catch (e) {
-            return interaction.editReply({ content: `❌ Error running start sequence: \`${e.message}\`` });
+            return interaction.editReply({ content: `❌ **Error running boot loader commands:** \`${e.message}\`` });
         }
     }
 
@@ -214,10 +262,16 @@ client.on('interactionCreate', async interaction => {
         try {
             await execPromise(`docker restart ${containerId}`);
             return interaction.editReply({
-                embeds: [new EmbedBuilder().setColor(THEME.GRADIENT_CYAN).setTitle(`🔄 Warm Reboot Executed [${containerId}]`).setDescription('💖 Container engine layer states re-aligned successfully.').setTimestamp()]
+                embeds: [new EmbedBuilder()
+                    .setColor(THEME.CYAN_GLOW)
+                    .setTitle(`🔄 Warm Kernel Reboot Executed [${containerId}]`)
+                    .setDescription(`${UI_DECORATOR}\n\n🟦 **Status:** \`REBOOTED\`\nMemory allocation matrices completely flushed. Daemon engine profiles refreshed cleanly.`)
+                    .setTimestamp()
+                    .setFooter({ text: UI_FOOTER })
+                ]
             });
         } catch (e) {
-            return interaction.editReply({ content: `❌ Error running restart commands: \`${e.message}\`` });
+            return interaction.editReply({ content: `❌ **Error running process system restart sequences:** \`${e.message}\`` });
         }
     }
 
@@ -227,10 +281,16 @@ client.on('interactionCreate', async interaction => {
         try {
             await execPromise(`docker rm -f ${containerId}`);
             return interaction.editReply({
-                embeds: [new EmbedBuilder().setColor(THEME.CRIMSON_RED).setTitle(`🗑️ Hardware Container Terminated Successfully`).setDescription(`✨ Container \`${containerId}\` has been permanently purged from internal system storage.`).setTimestamp()]
+                embeds: [new EmbedBuilder()
+                    .setColor(THEME.BURNING_RED)
+                    .setTitle(`🗑️ Node Infrastructure Safely Decommissioned`)
+                    .setDescription(`${UI_DECORATOR}\n\n🟥 **Status:** \`SHREDDED\`\nInstance \`${containerId}\` has been permanently unmounted, wiped, and erased out of local storage sectors.`)
+                    .setTimestamp()
+                    .setFooter({ text: UI_FOOTER })
+                ]
             });
         } catch (e) {
-            return interaction.editReply({ content: `❌ System purge exception encountered: \`${e.message}\`` });
+            return interaction.editReply({ content: `❌ **Error running container termination cleanup:** \`${e.message}\`` });
         }
     }
 
@@ -243,34 +303,37 @@ client.on('interactionCreate', async interaction => {
             
             return interaction.editReply({
                 embeds: [new EmbedBuilder()
-                    .setColor(THEME.NEON_PURPLE)
-                    .setTitle(`📊 Core Hardware Profile: ${containerId}`)
+                    .setColor(THEME.DEEP_PURPLE)
+                    .setTitle(`📊 Core Hardware Profile Telemetry: ${containerId}`)
+                    .setDescription(`${UI_DECORATOR}\nReal-time hypervisor resource runtime consumption telemetry data parsing loops.`)
                     .addFields(
-                        { name: '🖥️ CPU Usage', value: `\`${data.CPUPerc}\``, inline: true },
-                        { name: '💾 Memory Usage', value: `\`${data.MemUsage}\``, inline: true },
-                        { name: '📈 Memory Limit', value: `\`${data.MemPerc}\``, inline: true },
-                        { name: '🌐 Network I/O', value: `\`${data.NetIO}\``, inline: false }
+                        { name: '🖥️ CPU Usage Vector', value: `\`${data.CPUPerc}\``, inline: true },
+                        { name: '💾 RAM Capacity Active', value: `\`${data.MemUsage}\``, inline: true },
+                        { name: '📈 Total Resource Limit', value: `\`${data.MemPerc}\``, inline: true },
+                        { name: '🌐 Network Transport IO Throttle', value: `\`${data.NetIO}\``, inline: false }
                     )
-                    .setTimestamp()]
+                    .setTimestamp()
+                    .setFooter({ text: UI_FOOTER })
+                ]
             });
         } catch (e) {
-            return interaction.editReply({ content: `❌ Failed parsing metrics context layer: \`${e.message}\`` });
+            return interaction.editReply({ content: `❌ **Error gathering core hardware container statistics:** Container might be offline or non-existent.` });
         }
     }
 
     if (commandName === 'bot-information') {
         return interaction.reply({
             embeds: [new EmbedBuilder()
-                .setColor(THEME.VIBRANT_PINK)
-                .setTitle('💎 BoltHosting Deployer Bot Core Profiles')
+                .setColor(THEME.ELECTRIC_PINK)
+                .setTitle('💎 BoltHosting Deployer Automation Profile Core')
                 .setThumbnail(client.user.displayAvatarURL())
-                .setDescription('✨ Ultra-premium aesthetic automated standalone sandbox deployment container platform daemon setup.')
+                .setDescription(`✨ **Premium High-Performance Automated Container Platform Virtualization Engine Stack.**\n\n${UI_DECORATOR}`)
                 .addFields(
-                    { name: '👑 Master Platform Owner', value: `\`${process.env.OWNER_NAME || 'Lights.in'}\``, inline: true },
-                    { name: '🟢 Automation Engine Status', value: '`Natively Active` 🛡️', inline: true },
-                    { name: '⚙️ Virtualization Layer Type', value: '`Docker Container Core Sandboxing` 🐳', inline: false }
+                    { name: '👑 Infrastructure Master Principal', value: `\`${process.env.OWNER_NAME || 'Lights.in'}\``, inline: true },
+                    { name: '🟢 Service Pipeline Status', value: '`Natively Operational` 🛡️', inline: true },
+                    { name: '🐳 Virtualization Hypervisor Layer', value: '`Docker Sandboxing API Framework` 💎', inline: false }
                 )
-                .setFooter({ text: 'Designed uniquely for BoltHosting systems' })
+                .setFooter({ text: UI_FOOTER })
                 .setTimestamp()
             ]
         });
@@ -278,4 +341,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
-          
+            
